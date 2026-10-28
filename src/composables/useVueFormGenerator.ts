@@ -1,5 +1,5 @@
 import {computed, toValue, toRef, toRaw, watch} from "vue";
-import {defaultPlaceholder} from "../helpers/placeholders.ts";
+import {defaultPlaceholder, localeCompareSafe} from "../helpers/placeholders.ts";
 
 import { useI18n } from "vue-i18n";
 
@@ -248,7 +248,7 @@ export function useVueFormGenerator(initialSchema: Schema = {}, initialModel: Mo
         }
 
         // Default
-        return a_name.localeCompare(b_name, locale.value, {sensitivity: 'base'})
+        return localeCompareSafe(a_name, b_name, locale.value)
     }
 
     const flattenModel = (model: Model) => {

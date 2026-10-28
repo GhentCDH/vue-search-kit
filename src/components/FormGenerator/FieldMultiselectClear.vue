@@ -75,7 +75,8 @@ export default {
     mixins: [abstractField],
     setup() {
         const {t} = useI18n()
-        return {t}
+        // cast keeps the public type free of @intlify/core-base internals
+        return {t: /** @type {(key: string, named?: Record<string, unknown>) => string} */ (t)}
     },
     computed: {
         selectOptions() {

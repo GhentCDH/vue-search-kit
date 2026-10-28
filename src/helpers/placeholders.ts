@@ -52,3 +52,15 @@ export function defaultPlaceholder(kind: PlaceholderKind, label: string, transla
     const fallback = searchKitMessages.en.vsk.placeholder[kind]
     return fallback.replace('{article}', article).replace('{label}', lowerLabel)
 }
+
+/**
+ * String.localeCompare with the given locale; falls back to English when the
+ * locale is not a valid BCP 47 tag (e.g. 'fr_BE'), which would otherwise throw.
+ */
+export function localeCompareSafe(a: string, b: string, locale: string): number {
+    try {
+        return a.localeCompare(b, locale, {sensitivity: 'base'})
+    } catch (e) {
+        return a.localeCompare(b, 'en', {sensitivity: 'base'})
+    }
+}
