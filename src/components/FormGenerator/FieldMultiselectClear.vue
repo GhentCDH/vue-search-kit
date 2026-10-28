@@ -42,7 +42,10 @@
         @close="onClose"
     >
         <template #noResult>
-            <span>{{ selectOptions.noResult }}</span>
+            <span>{{ selectOptions.noResult ?? t('multiselect.noResult') }}</span>
+        </template>
+        <template #noOptions>
+            <span>{{ selectOptions.noOptions ?? t('multiselect.noOptions') }}</span>
         </template>
         <template #maxElements>
             <span>{{ selectOptions.maxElements }}</span>
@@ -66,9 +69,14 @@
 
 <script>
 import {abstractField} from 'vue3-form-generator-legacy';
+import {useI18n} from "vue-i18n";
 
 export default {
     mixins: [abstractField],
+    setup() {
+        const {t} = useI18n()
+        return {t}
+    },
     computed: {
         selectOptions() {
             return this.schema.selectOptions || {};
@@ -180,3 +188,20 @@ export default {
     },
 };
 </script>
+
+<i18n>
+{
+    "en": {
+        "multiselect": {
+            "noResult": "No matching options",
+            "noOptions": "List is empty"
+        }
+    },
+    "fr": {
+        "multiselect": {
+            "noResult": "Aucune option correspondante",
+            "noOptions": "Liste vide"
+        }
+    }
+}
+</i18n>

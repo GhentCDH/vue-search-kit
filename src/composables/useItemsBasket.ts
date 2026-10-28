@@ -1,5 +1,19 @@
 import {useSimpleState} from "./useSimpleState.ts";
 
+/** A row id: numeric, or a composite string key such as "copy:12". */
+export type ItemId = number | string;
+
+/**
+ * Sort comparator for ids: numbers numerically, strings naturally
+ * ("copy:9" before "copy:10").
+ */
+export function compareIds(a: ItemId, b: ItemId): number {
+    if (typeof a === 'number' && typeof b === 'number') {
+        return a - b;
+    }
+    return String(a).localeCompare(String(b), undefined, {numeric: true});
+}
+
 /**
  * Manage the set of selected row ids ("items basket") for a search page.
  *
@@ -11,17 +25,17 @@ import {useSimpleState} from "./useSimpleState.ts";
  *
  * @param initialIds ids selected from the start (default none)
  */
-export function useItemsBasket(initialIds: number[] = []) {
+export function useItemsBasket(initialIds: ItemId[] = []) {
 
-    const {state: selectedIds, setState: setSelectedIds} = useSimpleState<number[]>(initialIds);
+    const {state: selectedIds, setState: setSelectedIds} = useSimpleState<ItemId[]>(initialIds);
 
     /** Add the given ids to the selection (union, kept sorted). */
-    function addSelectedIds(ids: number[]) {
-        setSelectedIds([...new Set([...selectedIds.value, ...ids])].sort((a, b) => a - b));
+    function addSelectedIds(ids: ItemId[]) {
+        setSelectedIds([...new Set([...selectedIds.value, ...ids])].sort(compareIds));
     }
 
     /** Remove the given ids from the selection. */
-    function removeSelectedIds(ids: number[]) {
+    function removeSelectedIds(ids: ItemId[]) {
         const toRemove = new Set(ids);
         setSelectedIds(selectedIds.value.filter((id) => !toRemove.has(id)));
     }
