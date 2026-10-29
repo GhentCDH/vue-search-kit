@@ -15,7 +15,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr v-for="(item, index) in items" :key="item.id">
+        <tr v-for="(item, index) in items" :key="item[rowKey]">
             <slot name="actionsPreRow" :item="item" :index="index" :row="item">
             </slot>
             <td v-for="field in fields" :key="field.key" :class="field.tdClass">
@@ -47,6 +47,11 @@ export default {
         pt: {
             type: Object,
             default: undefined
+        },
+        /** Row property used as unique row key (e.g. a composite "type:id" key). */
+        rowKey: {
+            type: String,
+            default: 'id'
         },
         items: {
             type: Array,

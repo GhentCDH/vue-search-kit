@@ -2,6 +2,7 @@
     <b-table
         :items="items"
         :fields="fields"
+        :row-key="idKey"
         :sort-by="sortBy"
         :sort-ascending="sortAscending"
         @update:sort-by="(value) => emit('update:sortBy', value)"

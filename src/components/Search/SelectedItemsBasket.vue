@@ -12,7 +12,7 @@
                :href="getContextualDetailUrl(selectedIds[0])"
                @navigate="() => { if (selectedIds.length) saveSelectionContext(selectedIds[0]); }"
             >
-                View Charters
+                {{ viewLabel ?? t('selectedItemsBasket.view') }}
             </b-link>
         </li>
         <li v-for="(id, index) in selectedIds" :key="id"
@@ -32,16 +32,19 @@
 import BDropdown from "../Bootstrap/BDropdown.vue";
 import BLink from "../Bootstrap/BLink.vue";
 import {useI18n} from "vue-i18n";
+import type {ItemId} from "../../composables/useItemsBasket.ts";
 
 const { t } = useI18n() // use as global scope
 
 const props = defineProps<{
-    selectedIds: number[];
-    getContextualDetailUrl: (id: number) => string;
-    setSelectedIds: (ids: number[]) => void;
+    selectedIds: ItemId[];
+    getContextualDetailUrl: (id: ItemId) => string;
+    setSelectedIds: (ids: ItemId[]) => void;
     removeSelectedIndex: (index: number) => void;
-    saveSelectionContext: (id: number) => void;
+    saveSelectionContext: (id: ItemId) => void;
     message: string;
+    /** Label of the link that opens the selection (default: translated "View selection"). */
+    viewLabel?: string;
 }>();
 </script>
 
@@ -50,13 +53,15 @@ const props = defineProps<{
     "en": {
         "selectedItemsBasket": {
             "message": "No item selected | {count} item selected | {count} items selected",
-            "unselectAll": "Unselect all"
+            "unselectAll": "Unselect all",
+            "view": "View selection"
         }
     },
     "fr": {
         "selectedItemsBasket": {
             "message": "Aucun élément sélectionné | {count} élément sélectionné | {count} éléments sélectionnés",
-            "unselectAll": "Tout désélectionner"
+            "unselectAll": "Tout désélectionner",
+            "view": "Voir la sélection"
         }
     }
 }

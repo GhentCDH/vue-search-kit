@@ -5,6 +5,10 @@
                 :total-records="totalRecords"
                 :per-page="tableState.rowsPerPage"
                 :page="tableState.currentPage"
+                :label-first="labelFirst"
+                :label-previous="labelPrevious"
+                :label-next="labelNext"
+                :label-last="labelLast"
                 @update:page="(page) => emit('change', { currentPage: parseInt(page) })"
             ></b-pagination>
         </div>
@@ -17,7 +21,7 @@
         </div>
         <div class="col-lg-4 d-flex align-items-lg-center justify-content-lg-end">
             <b-select id="per-page"
-                      :label="perPageLabel"
+                      :label="perPageLabel ?? t('searchToolbar.perPage')"
                       :selected="tableState.rowsPerPage"
                       :options="perPageValues.map((value) => ({ value, text: value }))"
                       @update:selected="(value) => emit('change', { rowsPerPage: parseInt(value) })"
@@ -32,14 +36,27 @@ import BPagination from "../Bootstrap/BPagination.vue";
 import BSelect from "../Bootstrap/BSelect.vue";
 import RecordCount from "../Bootstrap/RecordCount.vue";
 import type {TableState} from "../../composables/useTableState";
+import {useI18n} from "vue-i18n";
+
+const {t} = useI18n()
 
 withDefaults(defineProps<{
     tableState: TableState;
     totalRecords: number;
     perPageValues: number[];
-    perPageLabel?: string;
+    /** Label of the per-page select; defaults to a translated "Per page". */
+    perPageLabel?: string | null;
+    /** Pagination button labels, forwarded to BPagination (default: its own translations). */
+    labelFirst?: string | null;
+    labelPrevious?: string | null;
+    labelNext?: string | null;
+    labelLast?: string | null;
 }>(), {
-    perPageLabel: 'Per page',
+    perPageLabel: null,
+    labelFirst: null,
+    labelPrevious: null,
+    labelNext: null,
+    labelLast: null,
 });
 
 const emit = defineEmits<{
@@ -47,3 +64,18 @@ const emit = defineEmits<{
     (e: 'change', patch: Partial<TableState>): void;
 }>();
 </script>
+
+<i18n>
+{
+    "en": {
+        "searchToolbar": {
+            "perPage": "Per page"
+        }
+    },
+    "fr": {
+        "searchToolbar": {
+            "perPage": "Par page"
+        }
+    }
+}
+</i18n>
