@@ -19,7 +19,15 @@
                 :page="tableState.currentPage"
             ></record-count>
         </div>
-        <div class="col-lg-4 d-flex align-items-lg-center justify-content-lg-end">
+        <div class="col-lg-4 d-flex align-items-lg-center justify-content-lg-end gap-2">
+            <b-select v-if="sortOptions.length"
+                      id="sort-by"
+                      :label="sortLabel ?? t('searchToolbar.sortBy')"
+                      :selected="selectedSortIndex"
+                      :options="sortOptions.map((option, index) => ({ value: String(index), text: option.label }))"
+                      @update:selected="onSortSelected"
+                      class="w-auto"
+            ></b-select>
             <b-select id="per-page"
                       :label="perPageLabel ?? t('searchToolbar.perPage')"
                       :selected="tableState.rowsPerPage"
@@ -36,11 +44,13 @@ import BPagination from "../Bootstrap/BPagination.vue";
 import BSelect from "../Bootstrap/BSelect.vue";
 import RecordCount from "../Bootstrap/RecordCount.vue";
 import type {TableState} from "../../composables/useTableState";
+import type {SortOption, SortValue} from "./types.ts";
+import {computed} from "vue";
 import {useI18n} from "vue-i18n";
 
 const {t} = useI18n()
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
     tableState: TableState;
     totalRecords: number;
     perPageValues: number[];
@@ -51,7 +61,13 @@ withDefaults(defineProps<{
     labelPrevious?: string | null;
     labelNext?: string | null;
     labelLast?: string | null;
+    /** Orders offered in a sort select; the select is hidden when empty. */
+    sortOptions?: SortOption[];
+    /** Accessible label of the sort select; defaults to a translated "Sort by". */
+    sortLabel?: string | null;
 }>(), {
+    sortOptions: () => [],
+    sortLabel: null,
     perPageLabel: null,
     labelFirst: null,
     labelPrevious: null,
@@ -62,19 +78,37 @@ withDefaults(defineProps<{
 const emit = defineEmits<{
     // a pagination/per-page change as a TableState patch (wire to updateTableState)
     (e: 'change', patch: Partial<TableState>): void;
+    // the order picked in the sort select (wire to updateTableState)
+    (e: 'update:sort', sort: SortValue): void;
 }>();
+
+// option that matches the current order ('' when none does)
+const selectedSortIndex = computed(() => {
+    const index = props.sortOptions.findIndex((option) =>
+        option.orderBy === props.tableState.orderBy && option.orderAsc === props.tableState.orderAsc);
+    return index < 0 ? '' : String(index);
+});
+
+const onSortSelected = (value: string) => {
+    const option = props.sortOptions[Number(value)];
+    if (option) {
+        emit('update:sort', {orderBy: option.orderBy, orderAsc: option.orderAsc});
+    }
+};
 </script>
 
 <i18n>
 {
     "en": {
         "searchToolbar": {
-            "perPage": "Per page"
+            "perPage": "Per page",
+            "sortBy": "Sort by"
         }
     },
     "fr": {
         "searchToolbar": {
-            "perPage": "Par page"
+            "perPage": "Par page",
+            "sortBy": "Trier par"
         }
     }
 }

@@ -13,8 +13,11 @@ export { default as RecordCount } from './components/Bootstrap/RecordCount.vue';
 export { default as FieldCheckbox } from './components/FormGenerator/FieldCheckbox.vue';
 export { default as FieldDMYRange } from './components/FormGenerator/FieldDMYRange.vue';
 export { default as FieldMultiselectClear } from './components/FormGenerator/FieldMultiselectClear.vue';
+export { default as SearchBox } from './components/Search/SearchBox.vue';
+export { default as SearchHighlights } from './components/Search/SearchHighlights.vue';
 export { default as SearchResultTable } from './components/Search/SearchResultTable.vue';
 export { default as SearchToolbar } from './components/Search/SearchToolbar.vue';
+export type { SortOption, SortValue, HighlightField } from './components/Search/types';
 export { default as SelectedItemsBasket } from './components/Search/SelectedItemsBasket.vue';
 
 // --- Pass-through (pt) theming ---
@@ -40,6 +43,7 @@ export type {
     BuildFilterSchemaContext,
     SearchAppEvent,
     SearchAppConfig,
+    RelevanceSortConfig,
 } from './composables/useSearchApp';
 
 export { useSearchContext } from './composables/useSearchContext';
