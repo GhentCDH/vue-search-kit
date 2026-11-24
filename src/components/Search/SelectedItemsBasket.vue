@@ -1,7 +1,7 @@
 <template>
     <b-dropdown class="active ms-auto">
         <template #display>
-            {{ t(message ?? 'selectedItemsBasket.message', { count: selectedIds.length }) }}
+            {{ message ? tGlobal(message, { count: selectedIds.length }) : t('selectedItemsBasket.message', { count: selectedIds.length }) }}
         </template>
 
         <li class="dropdown-header">
@@ -34,7 +34,9 @@ import BLink from "../Bootstrap/BLink.vue";
 import {useI18n} from "vue-i18n";
 import type {ItemId} from "../../composables/useItemsBasket.ts";
 
-const { t } = useI18n() // use as global scope
+// t: this component's own messages (<i18n> block); tGlobal: the app's messages, for the message key passed in
+const { t } = useI18n()
+const { t: tGlobal } = useI18n({ useScope: 'global' })
 
 const props = defineProps<{
     selectedIds: ItemId[];
@@ -42,7 +44,8 @@ const props = defineProps<{
     setSelectedIds: (ids: ItemId[]) => void;
     removeSelectedIndex: (index: number) => void;
     saveSelectionContext: (id: ItemId) => void;
-    message: string;
+    /** App i18n key (global scope) for the basket label, pluralized by the number of selected items. */
+    message?: string;
     /** Label of the link that opens the selection (default: translated "View selection"). */
     viewLabel?: string;
 }>();
