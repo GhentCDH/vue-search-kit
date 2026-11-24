@@ -77,8 +77,11 @@ let searched = text.value;
 let timer: ReturnType<typeof setTimeout> | null = null;
 
 watch(() => props.modelValue, (value) => {
-    text.value = value ?? '';
-    searched = text.value;
+    const external = value ?? '';
+    // our own update coming back through v-model: not searched yet
+    if (external === text.value) return;
+    text.value = external;
+    searched = external;
 });
 
 const cancelTimer = () => {

@@ -55,7 +55,7 @@ describe('SearchHighlights', () => {
 });
 
 describe('SearchBox', () => {
-    async function renderBox(initial = '', locale = 'en') {
+    async function renderBox(initial = '', locale = 'en', debounce = 0) {
         const value = ref(initial);
         const searches: string[] = [];
         const el = document.createElement('div');
@@ -64,7 +64,7 @@ describe('SearchBox', () => {
                 modelValue: value.value,
                 'onUpdate:modelValue': (v: string) => { value.value = v; },
                 onSearch: (v: string) => searches.push(v),
-                debounce: 0,
+                debounce,
             }),
         });
         app.use(createI18n({legacy: false, locale, fallbackLocale: 'en', messages: {en: {}, fr: {}}}));
@@ -83,6 +83,38 @@ describe('SearchBox', () => {
 
         expect(value.value).toBe('baldwin');
         expect(searches).toEqual(['baldwin']);
+    });
+
+    it('searches on Enter after the typed value came back through v-model', async () => {
+        const {el, searches} = await renderBox();
+        const input = el.querySelector('input')!;
+        input.value = 'baldwin';
+        input.dispatchEvent(new Event('input'));
+        await nextTick();
+        input.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}));
+
+        expect(searches).toEqual(['baldwin']);
+    });
+
+    it('searches after the debounce delay', async () => {
+        const {el, searches} = await renderBox('', 'en', 10);
+        const input = el.querySelector('input')!;
+        input.value = 'baldwin';
+        input.dispatchEvent(new Event('input'));
+        await nextTick();
+        await new Promise((resolve) => setTimeout(resolve, 30));
+
+        expect(searches).toEqual(['baldwin']);
+    });
+
+    it('does not search when the value is changed from outside', async () => {
+        const {el, value, searches} = await renderBox('baldwin');
+        value.value = '';
+        await nextTick();
+        el.querySelector('input')!.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}));
+
+        expect(el.querySelector('input')!.value).toBe('');
+        expect(searches).toEqual([]);
     });
 
     it('clears the value and searches again with the clear button', async () => {
