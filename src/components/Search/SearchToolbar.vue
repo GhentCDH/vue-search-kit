@@ -24,7 +24,7 @@
                       id="sort-by"
                       :label="sortLabel ?? t('searchToolbar.sortBy')"
                       :selected="selectedSortIndex"
-                      :options="sortOptions.map((option, index) => ({ value: String(index), text: option.label }))"
+                      :options="sortSelectOptions"
                       @update:selected="onSortSelected"
                       class="w-auto"
             ></b-select>
@@ -89,7 +89,15 @@ const selectedSortIndex = computed(() => {
     return index < 0 ? '' : String(index);
 });
 
+// when the order is none of the options (e.g. a column header sort), say so instead of showing the first
+// option as if it applied (choosing that option would then not even fire a change)
+const sortSelectOptions = computed(() => [
+    ...(selectedSortIndex.value === '' ? [{value: '', text: t('searchToolbar.otherOrder')}] : []),
+    ...props.sortOptions.map((option, index) => ({value: String(index), text: option.label})),
+]);
+
 const onSortSelected = (value: string) => {
+    if (value === '') return;
     const option = props.sortOptions[Number(value)];
     if (option) {
         emit('update:sort', {orderBy: option.orderBy, orderAsc: option.orderAsc});
@@ -102,13 +110,15 @@ const onSortSelected = (value: string) => {
     "en": {
         "searchToolbar": {
             "perPage": "Per page",
-            "sortBy": "Sort by"
+            "sortBy": "Sort by",
+            "otherOrder": "Other order"
         }
     },
     "fr": {
         "searchToolbar": {
             "perPage": "Par page",
-            "sortBy": "Trier par"
+            "sortBy": "Trier par",
+            "otherOrder": "Autre ordre"
         }
     }
 }

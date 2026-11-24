@@ -161,6 +161,23 @@ describe('SearchToolbar sort options', () => {
         expect(select.options[select.selectedIndex].text.trim()).toBe('Newest first');
     });
 
+    it('does not pretend to apply an option when the order is none of them', async () => {
+        const updates: unknown[] = [];
+        const el = await render(SearchToolbar, {
+            tableState: {...tableState, orderBy: 'id', orderAsc: false}, totalRecords: 100, perPageValues: [25], sortOptions,
+            'onUpdate:sort': (sort: unknown) => updates.push(sort),
+        });
+        const select = el.querySelector('#sort-by') as HTMLSelectElement;
+
+        expect(select.options[select.selectedIndex].text.trim()).not.toBe('Relevance');
+        select.dispatchEvent(new Event('change'));
+        expect(updates).toEqual([]);
+        const relevance = [...select.options].findIndex((o) => o.text.trim() === 'Relevance');
+        select.selectedIndex = relevance;
+        select.dispatchEvent(new Event('change'));
+        expect(updates).toEqual([{orderBy: '_score', orderAsc: false}]);
+    });
+
     it('emits the chosen order as a sort update', async () => {
         const updates: unknown[] = [];
         const el = await render(SearchToolbar, {
