@@ -15,7 +15,9 @@
                    @keydown.enter.prevent="search">
             <button v-if="text" type="button" data-action="clear" :class="ptClass('clearButton')"
                     :title="t('searchBox.clear')" :aria-label="t('searchBox.clear')"
-                    @click="clear"></button>
+                    @click="clear">
+                <i :class="ptClass('clearIcon')" aria-hidden="true"></i>
+            </button>
         </div>
         <div v-if="$slots.help" :class="ptClass('help')">
             <slot name="help"></slot>
@@ -64,7 +66,8 @@ const defaultPt: ComponentPt = {
     searchButton: 'btn btn-outline-secondary',
     icon: 'fa-solid fa-magnifying-glass',
     input: 'form-control',
-    clearButton: 'btn btn-outline-secondary btn-close search-box__clear',
+    clearButton: 'btn btn-outline-secondary',
+    clearIcon: 'fa-solid fa-xmark',
     help: 'form-text',
 };
 
@@ -121,11 +124,6 @@ onBeforeUnmount(cancelTimer);
     // the clear button replaces the browser's own one
     input[type="search"]::-webkit-search-cancel-button {
         display: none;
-    }
-
-    .search-box__clear {
-        height: auto;
-        background-size: 0.75em;
     }
 }
 </style>
