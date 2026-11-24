@@ -68,6 +68,21 @@ export type SearchAppConfig = {
     contextNamespace?: string;
     /** Parse the URL, run the initial search and wire popstate. Default true. */
     autoInit?: boolean;
+    /**
+     * Sort by relevance while a full-text filter is set. When `filter` goes from
+     * empty to non-empty, the order switches to `orderBy` (default `'_score'`),
+     * descending; when it is cleared while that order is active, the default
+     * order of `defaultTableState` comes back. A sort the user picks in between
+     * is left alone. The backend must accept `orderBy` (see the README).
+     */
+    relevanceSort?: RelevanceSortConfig;
+}
+
+export type RelevanceSortConfig = {
+    /** Name of the filter (flattened model key) that holds the full-text query. */
+    filter: string;
+    /** Order value that means "by relevance". Default `'_score'`. */
+    orderBy?: string;
 }
 
 const defaultFilterOptions = {
@@ -92,6 +107,11 @@ export function useSearchApp(config: SearchAppConfig) {
 
     const defaultFilterModel: Model = config.defaultFilterModel ?? {}
     const autoInit = config.autoInit ?? true
+    // copy: useTableState keeps (and mutates) the object it is given
+    const defaultOrder = {
+        orderBy: config.defaultTableState.orderBy,
+        orderAsc: config.defaultTableState.orderAsc,
+    }
 
     const resolveExtraQuery = (): Record<string, any> => {
         const extra = config.extraQuery
@@ -226,7 +246,29 @@ export function useSearchApp(config: SearchAppConfig) {
      * Apply new filters: store them, reset to page 1, push history and run a
      * search WITH aggregations (so filter options refresh).
      */
+    const hasValue = (value: unknown): boolean =>
+        value !== undefined && value !== null && String(value).trim() !== ''
+
+    /**
+     * Switch to/from the relevance order when the relevance filter is set or
+     * cleared (see SearchAppConfig.relevanceSort).
+     */
+    const applyRelevanceSort = (previousFilters: Record<string, any>, nextFilters: Record<string, any>) => {
+        if (!config.relevanceSort) return
+        const filterName = config.relevanceSort.filter
+        const relevanceOrder = config.relevanceSort.orderBy ?? '_score'
+        const wasSet = hasValue(previousFilters?.[filterName])
+        const isSet = hasValue(nextFilters?.[filterName])
+
+        if (!wasSet && isSet) {
+            patchTableState({orderBy: relevanceOrder, orderAsc: false})
+        } else if (wasSet && !isSet && tableState.value.orderBy === relevanceOrder) {
+            patchTableState({...defaultOrder})
+        }
+    }
+
     const updateFilterState = (payload: any) => {
+        applyRelevanceSort(filterState.value, payload)
         setFilterState(payload)
         setCurrentPage(1)
         emit('filterChange', {filters: filterState.value})
