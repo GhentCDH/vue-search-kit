@@ -1,5 +1,5 @@
 import {computed, toValue, toRef, toRaw, watch} from "vue";
-import Articles from "articles";
+import {defaultPlaceholder, localeCompareSafe} from "../helpers/placeholders.ts";
 
 import { useI18n } from "vue-i18n";
 
@@ -32,7 +32,8 @@ export type ValidatorFn = (value: any, model: Model, field: Field) => true | str
 
 export function useVueFormGenerator(initialSchema: Schema = {}, initialModel: Model = {}, initialValidators: Record<string, ValidatorFn> = {}) {
 
-    const { t } = useI18n()
+    const { t, te, locale } = useI18n()
+    const translator = {t, te}
 
     const defaultModel: Model = toValue(initialModel);
 
@@ -155,7 +156,7 @@ export function useVueFormGenerator(initialSchema: Schema = {}, initialModel: Mo
 
     const _disableField = (field: Field) => {
         field.disabled = true
-        field.placeholder = 'Loading'
+        field.placeholder = defaultPlaceholder('loading', field.label, translator)
         field.selectOptions.loading = true
         field.values = []
     }
@@ -174,7 +175,7 @@ export function useVueFormGenerator(initialSchema: Schema = {}, initialModel: Mo
         modelName && delete model.value[modelName]
         field.disabled = true
         field.selectOptions.loading = false
-        field.placeholder = field?.placeholderSelectDependencyFirst ?? 'Please select ' + Articles.articlize(label) + ' first'
+        field.placeholder = field?.placeholderSelectDependencyFirst ?? defaultPlaceholder('dependency', label, translator)
         // set dependency state
         field.styleClasses = [...new Set(field?.styleClasses?.split(' ') ?? []).add('field--dependency-missing')].join(' ')
     }
@@ -205,8 +206,7 @@ export function useVueFormGenerator(initialSchema: Schema = {}, initialModel: Mo
 
         field.selectOptions.loading = false
         field.disabled = field.originalDisabled == null ? false : field.originalDisabled;
-        let label = field.label.toLowerCase()
-        field.placeholder = field?.placeholderSelectItem ?? 'Select ' + Articles.articlize(label)
+        field.placeholder = field?.placeholderSelectItem ?? defaultPlaceholder('select', field.label, translator)
 
         // remove dependency state
         let classes = new Set(field?.styleClasses?.split(' ') ?? [])
@@ -224,7 +224,7 @@ export function useVueFormGenerator(initialSchema: Schema = {}, initialModel: Mo
 
         field.disabled = true
         field.selectOptions.loading = false
-        field.placeholder = field?.placeholderEmpty ?? 'No ' + field.label.toLowerCase() + ' available'
+        field.placeholder = field?.placeholderEmpty ?? defaultPlaceholder('empty', field.label, translator)
     }
 
     const _sortByName = (a, b) => {
@@ -248,7 +248,7 @@ export function useVueFormGenerator(initialSchema: Schema = {}, initialModel: Mo
         }
 
         // Default
-        return a_name.localeCompare(b_name, 'en', {sensitivity: 'base'})
+        return localeCompareSafe(a_name, b_name, locale.value)
     }
 
     const flattenModel = (model: Model) => {

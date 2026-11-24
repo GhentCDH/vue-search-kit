@@ -1,5 +1,5 @@
 <template>
-    <nav aria-label="Page navigation">
+    <nav :aria-label="t('pagination.ariaLabel')">
         <ul :class="ptClass('list')">
             <li v-if="showFirst" :class="[ptClass('item'), { [ptClass('disabled')]: currentPage === 1 }]">
                 <a :class="[ptClass('link'), 'box-shadow-none']" href="#" @click.prevent="changePage(1)">{{ labelFirst ?? t('pagination.first') }}</a>
@@ -133,7 +133,8 @@ export default {
             "first": "First",
             "previous": "Previous",
             "next": "Next",
-            "last": "Last"
+            "last": "Last",
+            "ariaLabel": "Page navigation"
         }
     },
     "fr": {
@@ -141,7 +142,8 @@ export default {
             "first": "Premier",
             "previous": "Précédent",
             "next": "Suivant",
-            "last": "Dernièr"
+            "last": "Dernier",
+            "ariaLabel": "Navigation des pages"
         }
     }
 }

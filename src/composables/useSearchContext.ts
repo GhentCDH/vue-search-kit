@@ -4,6 +4,7 @@ import axios from "axios";
 import qs from "qs";
 import merge from "lodash.merge";
 import type {TableState} from "./useTableState.ts";
+import {compareIds, type ItemId} from "./useItemsBasket.ts";
 
 export type Context = {
     params: {
@@ -16,7 +17,7 @@ export type Context = {
     searchIndex: number | null; // currently selected index in the resultset
     prevUrl: string | null;
     count: number;
-    ids: number[] | null; // IDs selected by the user
+    ids: ItemId[] | null; // IDs selected by the user
 }
 
 export type ResultSet = {
@@ -25,7 +26,7 @@ export type ResultSet = {
         limit: number;
         page: number;
     };
-    ids: number[]; // Calculated IDs
+    ids: ItemId[]; // Calculated IDs
     count: number;
     url: string | null;
 }
@@ -100,7 +101,7 @@ export function useSearchContext(
         getTableState: () => TableState;
         getFilters: () => object;
         getCount: () => number;
-        getSelectedIds: () => number[];
+        getSelectedIds: () => ItemId[];
         namespace: string; // disambiguates apps sharing the localStorage 'context' store
     }
     let saveContextSource: SaveContextSource | null = null;
@@ -149,12 +150,12 @@ export function useSearchContext(
      * when one exists (adding the clicked id if missing); otherwise it browses
      * the full result set, using the row index for the absolute position.
      */
-    const buildBrowseSet = (id: number, rowIndex?: number) => {
+    const buildBrowseSet = (id: ItemId, rowIndex?: number) => {
         const src = saveContextSource!;
         const tableState = src.getTableState();
         const selected = src.getSelectedIds();
 
-        let ids: number[] | null;
+        let ids: ItemId[] | null;
         let index: number;
         let count: number;
         let descriptor: any;
@@ -163,7 +164,7 @@ export function useSearchContext(
             ids = [...selected];
             if (!ids.includes(id)) {
                 ids.push(id);
-                ids.sort((a, b) => a - b);
+                ids.sort(compareIds);
             }
             index = ids.indexOf(id) + 1;
             count = ids.length;
@@ -206,7 +207,7 @@ export function useSearchContext(
      * @param id clicked item id
      * @param rowIndex 0-based row index on the current page (result-set browsing only)
      */
-    const getContextFragment = (id: number, rowIndex?: number): string => {
+    const getContextFragment = (id: ItemId, rowIndex?: number): string => {
         if (!saveContextSource) return '';
         const {descriptor, index} = buildBrowseSet(id, rowIndex);
         return `${getContextHash(descriptor)}:${index}`;
@@ -218,7 +219,7 @@ export function useSearchContext(
      * uses, so the stored key always matches the URL the browser navigates to.
      * Idempotent: every row of a search shares one hash, so re-saving is a no-op.
      */
-    const _save = (id: number, rowIndex?: number): void => {
+    const _save = (id: ItemId, rowIndex?: number): void => {
         if (!saveContextSource) {
             console.error('useSearchContext: save context source not set');
             return;
@@ -231,14 +232,14 @@ export function useSearchContext(
      * Save the context for visiting an item from the result table (scopes to the
      * selection when one exists, otherwise the full result set).
      */
-    const saveResultContext = (id: number, index: number): void => {
+    const saveResultContext = (id: ItemId, index: number): void => {
         _save(id, index);
     }
 
     /**
      * Save the context for visiting one of the selected items (always the selection).
      */
-    const saveSelectionContext = (id: number): void => {
+    const saveSelectionContext = (id: ItemId): void => {
         _save(id);
     }
 
@@ -359,7 +360,7 @@ export function useSearchContext(
         }
     }
 
-    const _updateContext = (id: number, index: number) => {
+    const _updateContext = (id: ItemId, index: number) => {
         context.value.searchIndex = index;
         // keep the position in the URL fragment (per-tab, reload-safe); the
         // shared content-keyed context must not carry a per-tab position

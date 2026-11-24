@@ -45,7 +45,7 @@ export default {
 </script>
 
 <template>
-    <select :class="ptClass('select')" @change="updateSelected($event)">
+    <select :class="ptClass('select')" :aria-label="label" @change="updateSelected($event)">
         <option v-for="option in options" :key="option.value" :value="option.value"
                 :selected="option.value === selected">
             {{ option.text }}

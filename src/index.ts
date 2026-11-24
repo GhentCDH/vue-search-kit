@@ -30,7 +30,8 @@ export type { ComponentPt, BootstrapPt } from './components/Bootstrap/usePassThr
 export { useActiveFilterTags } from './composables/useActiveFilterTags';
 export type { FilterTag } from './composables/useActiveFilterTags';
 
-export { useItemsBasket } from './composables/useItemsBasket';
+export { useItemsBasket, compareIds } from './composables/useItemsBasket';
+export type { ItemId } from './composables/useItemsBasket';
 
 export { useSearchApi, queryMode } from './composables/useSearchApi';
 
@@ -72,3 +73,7 @@ export type {
 
 // --- Helpers ---
 export { default as FormGeneratorFieldCreator } from './helpers/FormGeneratorFieldCreator.js';
+
+// --- i18n defaults ---
+export { searchKitMessages, defaultPlaceholder } from './helpers/placeholders';
+export type { PlaceholderKind } from './helpers/placeholders';
