@@ -1,4 +1,4 @@
-import {describe, it, expect} from 'vitest';
+import {describe, it, expect, vi} from 'vitest';
 import {createApp, h, nextTick, type Component} from 'vue';
 import {createI18n} from 'vue-i18n';
 
@@ -6,10 +6,10 @@ import BPagination from '../src/components/Bootstrap/BPagination.vue';
 import SearchToolbar from '../src/components/Search/SearchToolbar.vue';
 import SelectedItemsBasket from '../src/components/Search/SelectedItemsBasket.vue';
 
-async function render(component: Component, props: Record<string, unknown>, locale = 'fr') {
+async function render(component: Component, props: Record<string, unknown>, locale = 'fr', messages = {en: {}, fr: {}}) {
     const el = document.createElement('div');
     const app = createApp({render: () => h(component, props)});
-    app.use(createI18n({legacy: false, locale, fallbackLocale: 'en', messages: {en: {}, fr: {}}}));
+    app.use(createI18n({legacy: false, locale, fallbackLocale: 'en', messages}));
     app.mount(el);
     await nextTick();
     return el;
@@ -51,7 +51,6 @@ describe('SelectedItemsBasket', () => {
         setSelectedIds: () => {},
         removeSelectedIndex: () => {},
         saveSelectionContext: () => {},
-        message: 'selectedItemsBasket.message',
     };
 
     it('shows a translated default view label instead of "View Charters"', async () => {
@@ -63,5 +62,22 @@ describe('SelectedItemsBasket', () => {
     it('uses the viewLabel prop when given', async () => {
         const el = await render(SelectedItemsBasket, {...baseProps, viewLabel: 'Voir les chartes'});
         expect(el.textContent).toContain('Voir les chartes');
+    });
+
+    it('shows the translated default message without a message prop', async () => {
+        const el = await render(SelectedItemsBasket, baseProps);
+        expect(el.textContent).toContain('2 éléments sélectionnés');
+    });
+
+    it('translates an app message key in the global scope without warnings', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        const messages = {
+            en: {app: {selected: 'No charters selected | {count} charter selected | {count} charters selected'}},
+            fr: {app: {selected: 'Aucune charte sélectionnée | {count} charte sélectionnée | {count} chartes sélectionnées'}},
+        };
+        const el = await render(SelectedItemsBasket, {...baseProps, message: 'app.selected'}, 'fr', messages);
+        expect(el.textContent).toContain('2 chartes sélectionnées');
+        expect(warn).not.toHaveBeenCalled();
+        warn.mockRestore();
     });
 });
